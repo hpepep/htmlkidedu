@@ -17,6 +17,9 @@
             --primary-color: #2563eb;
             --primary-light: #eff6ff;
             --success-color: #16a34a;
+            --success-light: #f0fdf4;
+            --warning-color: #d97706;
+            --warning-light: #fffbeb;
             --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
             --header-bg: #ffffff;
             --header-text: #0f172a;
@@ -32,6 +35,9 @@
             --primary-color: #3b82f6;
             --primary-light: #1e3a8a;
             --success-color: #4ade80;
+            --success-light: #064e3b;
+            --warning-color: #f59e0b;
+            --warning-light: #78350f;
             --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5), 0 2px 4px -2px rgba(0, 0, 0, 0.5);
             --header-bg: #1e293b;
             --header-text: #f8fafc;
@@ -183,6 +189,9 @@
             text-transform: uppercase;
             letter-spacing: 0.05em;
             margin-bottom: 0.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
 
         .kpi-value {
@@ -197,7 +206,31 @@
             color: var(--text-secondary);
             display: flex;
             align-items: center;
+            justify-content: space-between;
             gap: 0.25rem;
+            margin-top: auto;
+            padding-top: 0.5rem;
+            border-top: 1px dashed var(--border-color);
+        }
+
+        .trend-badge {
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 0.15rem 0.5rem;
+            border-radius: 4px;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .trend-ahead {
+            background-color: var(--success-light);
+            color: var(--success-color);
+        }
+
+        .trend-lagging {
+            background-color: var(--warning-light);
+            color: var(--warning-color);
         }
 
         /* Workspace Wrapper & Tabs */
@@ -420,8 +453,10 @@
                     <div class="kpi-value" id="kpi-k1-year">2030</div>
                 </div>
                 <div class="kpi-subtext">
-                    <i data-lucide="calendar" style="width: 14px; height: 14px;"></i>
-                    Target Graduation Year
+                    <span>
+                        <i data-lucide="calendar" style="width: 14px; height: 14px; display: inline; vertical-align: middle;"></i>
+                        Target Graduation Year
+                    </span>
                 </div>
             </div>
             <div class="kpi-card kid2">
@@ -430,28 +465,42 @@
                     <div class="kpi-value" id="kpi-k2-year">2038</div>
                 </div>
                 <div class="kpi-subtext">
-                    <i data-lucide="calendar" style="width: 14px; height: 14px;"></i>
-                    Target Graduation Year
+                    <span>
+                        <i data-lucide="calendar" style="width: 14px; height: 14px; display: inline; vertical-align: middle;"></i>
+                        Target Graduation Year
+                    </span>
                 </div>
             </div>
             <div class="kpi-card">
                 <div>
-                    <div class="kpi-label">Kid 1 Current Corpus</div>
+                    <div class="kpi-label">
+                        Kid 1 Current Corpus
+                        <span id="k1-trend" class="trend-badge">Calculating...</span>
+                    </div>
                     <div class="kpi-value" id="kpi-k1-corpus">₹0.00</div>
+                    <p id="k1-percent-achieved" style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 0.5rem; font-weight: 600;">0.0% of target achieved</p>
                 </div>
                 <div class="kpi-subtext">
-                    <i data-lucide="trending-up" style="width: 14px; height: 14px;"></i>
-                    From Kid1MF Mutual Funds
+                    <span>
+                        <i data-lucide="trending-up" style="width: 14px; height: 14px; display: inline; vertical-align: middle;"></i>
+                        Based on Kid1MF value
+                    </span>
                 </div>
             </div>
             <div class="kpi-card kid2">
                 <div>
-                    <div class="kpi-label">Kid 2 Current Corpus</div>
+                    <div class="kpi-label">
+                        Kid 2 Current Corpus
+                        <span id="k2-trend" class="trend-badge">Calculating...</span>
+                    </div>
                     <div class="kpi-value" id="kpi-k2-corpus">₹0.00</div>
+                    <p id="k2-percent-achieved" style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 0.5rem; font-weight: 600;">0.0% of target achieved</p>
                 </div>
                 <div class="kpi-subtext">
-                    <i data-lucide="trending-up" style="width: 14px; height: 14px;"></i>
-                    From Kid2MF Mutual Funds
+                    <span>
+                        <i data-lucide="trending-up" style="width: 14px; height: 14px; display: inline; vertical-align: middle;"></i>
+                        Based on Kid2MF value
+                    </span>
                 </div>
             </div>
         </div>
@@ -650,6 +699,10 @@
             { code: "103490", units: 5629.582, fallbackNav: 85.10, fallbackName: "Mirae Asset Large Cap Fund" }
         ];
 
+        // Global variables for live corpus trackers
+        let currentCorpusK1 = 0;
+        let currentCorpusK2 = 0;
+
         // Format Helper
         function formatINR(value) {
             return new Intl.NumberFormat('en-IN', {
@@ -686,6 +739,54 @@
             // Highlight current button
             const btnIdx = { 'kid1plan': 0, 'kid1mf': 1, 'kid2plan': 2, 'kid2mf': 3 }[tabId];
             document.querySelectorAll('.tab-button')[btnIdx].classList.add('active');
+        }
+
+        // Calculate Future Cost with inflation
+        function getTargetExpense(targetYear) {
+            let val = config.baseExpense;
+            for (let yr = config.baseYear + 1; yr <= targetYear; yr++) {
+                val *= (1 + config.inflationRate);
+            }
+            return val;
+        }
+
+        // Update calculations on KPI cards
+        function refreshKPIMetrics() {
+            const k1TargetYear = parseInt(document.getElementById('select-k1-year').value);
+            const k2TargetYear = parseInt(document.getElementById('select-k2-year').value);
+
+            const k1TargetExpense = getTargetExpense(k1TargetYear);
+            const k2TargetExpense = getTargetExpense(k2TargetYear);
+
+            // 1. Percentage calculations
+            const k1Percentage = k1TargetExpense > 0 ? (currentCorpusK1 / k1TargetExpense) * 100 : 0;
+            const k2Percentage = k2TargetExpense > 0 ? (currentCorpusK2 / k2TargetExpense) * 100 : 0;
+
+            document.getElementById('k1-percent-achieved').textContent = `${k1Percentage.toFixed(1)}% of target achieved`;
+            document.getElementById('k2-percent-achieved').textContent = `${k2Percentage.toFixed(1)}% of target achieved`;
+
+            // 2. Trend Calculations against Current Year (2026 Baseline ₹15,00,000)
+            const baseExpense = config.baseExpense;
+
+            // Kid 1 Badge
+            const k1TrendElement = document.getElementById('k1-trend');
+            if (currentCorpusK1 >= baseExpense) {
+                k1TrendElement.textContent = "Ahead (Current Yr)";
+                k1TrendElement.className = "trend-badge trend-ahead";
+            } else {
+                k1TrendElement.textContent = "Lagging (Current Yr)";
+                k1TrendElement.className = "trend-badge trend-lagging";
+            }
+
+            // Kid 2 Badge
+            const k2TrendElement = document.getElementById('k2-trend');
+            if (currentCorpusK2 >= baseExpense) {
+                k2TrendElement.textContent = "Ahead (Current Yr)";
+                k2TrendElement.className = "trend-badge trend-ahead";
+            } else {
+                k2TrendElement.textContent = "Lagging (Current Yr)";
+                k2TrendElement.className = "trend-badge trend-lagging";
+            }
         }
 
         // Generate dynamic inflation plans
@@ -737,7 +838,7 @@
         // Fetch Live Mutual Fund NAVs
         async function fetchMFData() {
             // Process Kid 1 Portfolio
-            let kid1Total = 0;
+            currentCorpusK1 = 0;
             const k1Body = document.querySelector('#tbl-k1-mf tbody');
             k1Body.innerHTML = '';
 
@@ -758,7 +859,7 @@
                 }
                 
                 const currentVal = fund.units * nav;
-                kid1Total += currentVal;
+                currentCorpusK1 += currentVal;
 
                 const row = document.createElement('tr');
                 row.innerHTML = `
@@ -770,12 +871,12 @@
                 `;
                 k1Body.appendChild(row);
             }
-            document.getElementById('k1-mf-total').textContent = formatINR(kid1Total);
-            document.getElementById('kpi-k1-corpus').textContent = formatINR(kid1Total);
+            document.getElementById('k1-mf-total').textContent = formatINR(currentCorpusK1);
+            document.getElementById('kpi-k1-corpus').textContent = formatINR(currentCorpusK1);
             document.getElementById('k1-sync-status').textContent = "Synced with Live AMFI values";
 
             // Process Kid 2 Portfolio
-            let kid2Total = 0;
+            currentCorpusK2 = 0;
             const k2Body = document.querySelector('#tbl-k2-mf tbody');
             k2Body.innerHTML = '';
 
@@ -796,7 +897,7 @@
                 }
                 
                 const currentVal = fund.units * nav;
-                kid2Total += currentVal;
+                currentCorpusK2 += currentVal;
 
                 const row = document.createElement('tr');
                 row.innerHTML = `
@@ -808,9 +909,12 @@
                 `;
                 k2Body.appendChild(row);
             }
-            document.getElementById('k2-mf-total').textContent = formatINR(kid2Total);
-            document.getElementById('kpi-k2-corpus').textContent = formatINR(kid2Total);
+            document.getElementById('k2-mf-total').textContent = formatINR(currentCorpusK2);
+            document.getElementById('kpi-k2-corpus').textContent = formatINR(currentCorpusK2);
             document.getElementById('k2-sync-status').textContent = "Synced with Live AMFI values";
+
+            // Recalculate achievement metrics once corpus is parsed
+            refreshKPIMetrics();
         }
 
         function updateTargetYears() {
@@ -821,6 +925,7 @@
             document.getElementById('kpi-k2-year').textContent = k2Year;
             
             generateInflationPlans();
+            refreshKPIMetrics();
         }
 
         // Init Sequence
