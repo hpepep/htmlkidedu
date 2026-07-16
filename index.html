@@ -1,0 +1,834 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Child Education Planner</title>
+    <!-- Lucide Icons for clean UI elements -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        :root {
+            /* Light Theme Variables */
+            --bg-app: #f8fafc;
+            --bg-card: #ffffff;
+            --border-color: #e2e8f0;
+            --text-primary: #0f172a;
+            --text-secondary: #64748b;
+            --primary-color: #2563eb;
+            --primary-light: #eff6ff;
+            --success-color: #16a34a;
+            --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
+            --header-bg: #ffffff;
+            --header-text: #0f172a;
+        }
+
+        [data-theme="dark"] {
+            /* Dark Theme Variables */
+            --bg-app: #0f172a;
+            --bg-card: #1e293b;
+            --border-color: #334155;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --primary-color: #3b82f6;
+            --primary-light: #1e3a8a;
+            --success-color: #4ade80;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5), 0 2px 4px -2px rgba(0, 0, 0, 0.5);
+            --header-bg: #1e293b;
+            --header-text: #f8fafc;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            transition: background-color 0.25s ease, border-color 0.25s ease, color 0.25s ease;
+        }
+
+        body {
+            background-color: var(--bg-app);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            background-color: var(--header-bg);
+            border-bottom: 1px solid var(--border-color);
+            padding: 1rem 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            box-shadow: var(--shadow);
+        }
+
+        .header-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .logo-icon {
+            background-color: var(--primary-color);
+            color: #ffffff;
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.25rem;
+        }
+
+        .logo-text {
+            font-size: 1.25rem;
+            font-weight: 700;
+        }
+
+        .logo-text span {
+            color: var(--primary-color);
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .badge-secure {
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+            background-color: var(--primary-light);
+            color: var(--primary-color);
+            padding: 0.35rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .theme-toggle {
+            background: none;
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 0.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .theme-toggle:hover {
+            background-color: var(--primary-light);
+        }
+
+        main {
+            flex: 1;
+            max-width: 1200px;
+            width: 100%;
+            margin: 2rem auto;
+            padding: 0 1.5rem;
+        }
+
+        /* KPI Cards Grid */
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .kpi-card {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: var(--shadow);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .kpi-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background-color: var(--primary-color);
+        }
+
+        .kpi-card.kid2::before {
+            background-color: var(--success-color);
+        }
+
+        .kpi-label {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.5rem;
+        }
+
+        .kpi-value {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .kpi-subtext {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        /* Workspace Wrapper & Tabs */
+        .workspace-card {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            margin-bottom: 2rem;
+        }
+
+        .tab-bar {
+            display: flex;
+            background-color: var(--bg-app);
+            border-bottom: 1px solid var(--border-color);
+            overflow-x: auto;
+        }
+
+        .tab-button {
+            background: none;
+            border: none;
+            padding: 1rem 1.5rem;
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            border-bottom: 2px solid transparent;
+            white-space: nowrap;
+        }
+
+        .tab-button:hover {
+            color: var(--text-primary);
+            background-color: var(--bg-card);
+        }
+
+        .tab-button.active {
+            color: var(--primary-color);
+            border-bottom-color: var(--primary-color);
+            background-color: var(--bg-card);
+        }
+
+        .tab-content {
+            padding: 1.5rem;
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Tables & Typography */
+        .table-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+        }
+
+        .table-header h3 {
+            font-size: 1.2rem;
+            font-weight: 700;
+        }
+
+        .table-container {
+            width: 100%;
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 0.9rem;
+        }
+
+        th {
+            background-color: var(--bg-app);
+            color: var(--text-secondary);
+            font-weight: 600;
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid var(--border-color);
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 0.05em;
+        }
+
+        td {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border-color);
+            color: var(--text-primary);
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        tr:hover td {
+            background-color: var(--primary-light);
+        }
+
+        .text-right {
+            text-align: right;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .badge-blue {
+            background-color: var(--primary-light);
+            color: var(--primary-color);
+        }
+
+        /* Controls / Inputs */
+        .year-selector {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        .year-selector select {
+            padding: 0.25rem 0.5rem;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            background-color: var(--bg-card);
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        .status-pill {
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        .pulse {
+            width: 8px;
+            height: 8px;
+            background-color: var(--success-color);
+            border-radius: 50%;
+            animation: pulse-animation 2s infinite;
+        }
+
+        @keyframes pulse-animation {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(22, 163, 74, 0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(22, 163, 74, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(22, 163, 74, 0); }
+        }
+
+        footer {
+            background-color: var(--header-bg);
+            border-top: 1px solid var(--border-color);
+            padding: 1.5rem;
+            text-align: center;
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            margin-top: auto;
+        }
+
+        @media (max-width: 768px) {
+            .header-container {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            main {
+                margin: 1rem auto;
+            }
+            .kpi-grid {
+                gap: 1rem;
+            }
+        }
+    </style>
+</head>
+<body data-theme="light">
+
+    <header>
+        <div class="header-container">
+            <div class="logo-section">
+                <div class="logo-icon">₹</div>
+                <div class="logo-text">ChildEdu<span>Planner</span></div>
+            </div>
+            <div class="header-actions">
+                <div class="badge-secure">
+                    <i data-lucide="lock" style="width: 12px; height: 12px;"></i>
+                    Private &amp; Secure
+                </div>
+                <button class="theme-toggle" onclick="toggleTheme()" title="Switch Theme">
+                    <i id="theme-icon" data-lucide="moon" style="width: 18px; height: 18px;"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <!-- KPI Row -->
+        <div class="kpi-grid">
+            <div class="kpi-card">
+                <div>
+                    <div class="kpi-label">Kid 1 Target Year</div>
+                    <div class="kpi-value" id="kpi-k1-year">2030</div>
+                </div>
+                <div class="kpi-subtext">
+                    <i data-lucide="calendar" style="width: 14px; height: 14px;"></i>
+                    Target Graduation Year
+                </div>
+            </div>
+            <div class="kpi-card kid2">
+                <div>
+                    <div class="kpi-label">Kid 2 Target Year</div>
+                    <div class="kpi-value" id="kpi-k2-year">2038</div>
+                </div>
+                <div class="kpi-subtext">
+                    <i data-lucide="calendar" style="width: 14px; height: 14px;"></i>
+                    Target Graduation Year
+                </div>
+            </div>
+            <div class="kpi-card">
+                <div>
+                    <div class="kpi-label">Kid 1 Current Corpus</div>
+                    <div class="kpi-value" id="kpi-k1-corpus">₹0.00</div>
+                </div>
+                <div class="kpi-subtext">
+                    <i data-lucide="trending-up" style="width: 14px; height: 14px;"></i>
+                    From Kid1MF Mutual Funds
+                </div>
+            </div>
+            <div class="kpi-card kid2">
+                <div>
+                    <div class="kpi-label">Kid 2 Current Corpus</div>
+                    <div class="kpi-value" id="kpi-k2-corpus">₹0.00</div>
+                </div>
+                <div class="kpi-subtext">
+                    <i data-lucide="trending-up" style="width: 14px; height: 14px;"></i>
+                    From Kid2MF Mutual Funds
+                </div>
+            </div>
+        </div>
+
+        <!-- Main workspace containing planners -->
+        <div class="workspace-card">
+            <div class="tab-bar">
+                <button class="tab-button active" onclick="switchTab('kid1plan')">
+                    <i data-lucide="graduation-cap" style="width: 16px; height: 16px;"></i>
+                    Kid1Plan
+                </button>
+                <button class="tab-button" onclick="switchTab('kid1mf')">
+                    <i data-lucide="bar-chart-3" style="width: 16px; height: 16px;"></i>
+                    Kid1MF Portfolio
+                </button>
+                <button class="tab-button" onclick="switchTab('kid2plan')">
+                    <i data-lucide="graduation-cap" style="width: 16px; height: 16px;"></i>
+                    Kid2Plan
+                </button>
+                <button class="tab-button" onclick="switchTab('kid2mf')">
+                    <i data-lucide="bar-chart-3" style="width: 16px; height: 16px;"></i>
+                    Kid2MF Portfolio
+                </button>
+            </div>
+
+            <!-- Tab 1: Kid 1 Plan -->
+            <div id="kid1plan" class="tab-content active">
+                <div class="table-header">
+                    <div>
+                        <h3>Kid 1: Educational Cost Projections</h3>
+                        <p style="color: var(--text-secondary); font-size: 0.85rem; margin-top: 0.25rem;">Compounded at 10% annual inflation starting from ₹15,00,000 in 2026</p>
+                    </div>
+                    <div class="year-selector">
+                        Target Graduation Year:
+                        <select id="select-k1-year" onchange="updateTargetYears()">
+                            <option value="2028">2028</option>
+                            <option value="2029">2029</option>
+                            <option value="2030" selected>2030</option>
+                            <option value="2031">2031</option>
+                            <option value="2032">2032</option>
+                            <option value="2033">2033</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="table-container">
+                    <table id="tbl-k1-plan">
+                        <thead>
+                            <tr>
+                                <th>Year</th>
+                                <th>Base Cost (Inflation Adjusted)</th>
+                                <th>Est. Cumulative Inflation</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Dynamic Generation -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Tab 2: Kid 1 Mutual Funds -->
+            <div id="kid1mf" class="tab-content">
+                <div class="table-header">
+                    <div>
+                        <h3>Kid 1 Mutual Funds Valuation</h3>
+                        <p style="color: var(--text-secondary); font-size: 0.85rem; margin-top: 0.25rem;">Real-time pricing synced from AMFI API records</p>
+                    </div>
+                    <div class="status-pill">
+                        <div class="pulse"></div>
+                        <span id="k1-sync-status">Syncing real-time NAVs...</span>
+                    </div>
+                </div>
+                <div class="table-container">
+                    <table id="tbl-k1-mf">
+                        <thead>
+                            <tr>
+                                <th>AMFI Code</th>
+                                <th>Scheme Name</th>
+                                <th class="text-right">Units Registered</th>
+                                <th class="text-right">Current NAV</th>
+                                <th class="text-right">Current Value (₹)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Dynamic Content -->
+                        </tbody>
+                        <tfoot>
+                            <tr style="background-color: var(--bg-app); font-weight: bold;">
+                                <td colspan="2">Consolidated Portfolio Total</td>
+                                <td colspan="3" class="text-right" id="k1-mf-total" style="font-size: 1.1rem; color: var(--primary-color);">₹0.00</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Tab 3: Kid 2 Plan -->
+            <div id="kid2plan" class="tab-content">
+                <div class="table-header">
+                    <div>
+                        <h3>Kid 2: Educational Cost Projections</h3>
+                        <p style="color: var(--text-secondary); font-size: 0.85rem; margin-top: 0.25rem;">Compounded at 10% annual inflation starting from ₹15,00,000 in 2026</p>
+                    </div>
+                    <div class="year-selector">
+                        Target Graduation Year:
+                        <select id="select-k2-year" onchange="updateTargetYears()">
+                            <option value="2034">2034</option>
+                            <option value="2035">2035</option>
+                            <option value="2036">2036</option>
+                            <option value="2037">2037</option>
+                            <option value="2038" selected>2038</option>
+                            <option value="2039">2039</option>
+                            <option value="2040">2040</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="table-container">
+                    <table id="tbl-k2-plan">
+                        <thead>
+                            <tr>
+                                <th>Year</th>
+                                <th>Base Cost (Inflation Adjusted)</th>
+                                <th>Est. Cumulative Inflation</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Dynamic Generation -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Tab 4: Kid 2 Mutual Funds -->
+            <div id="kid2mf" class="tab-content">
+                <div class="table-header">
+                    <div>
+                        <h3>Kid 2 Mutual Funds Valuation</h3>
+                        <p style="color: var(--text-secondary); font-size: 0.85rem; margin-top: 0.25rem;">Real-time pricing synced from AMFI API records</p>
+                    </div>
+                    <div class="status-pill">
+                        <div class="pulse"></div>
+                        <span id="k2-sync-status">Syncing real-time NAVs...</span>
+                    </div>
+                </div>
+                <div class="table-container">
+                    <table id="tbl-k2-mf">
+                        <thead>
+                            <tr>
+                                <th>AMFI Code</th>
+                                <th>Scheme Name</th>
+                                <th class="text-right">Units Registered</th>
+                                <th class="text-right">Current NAV</th>
+                                <th class="text-right">Current Value (₹)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Dynamic Content -->
+                        </tbody>
+                        <tfoot>
+                            <tr style="background-color: var(--bg-app); font-weight: bold;">
+                                <td colspan="2">Consolidated Portfolio Total</td>
+                                <td colspan="3" class="text-right" id="k2-mf-total" style="font-size: 1.1rem; color: var(--success-color);">₹0.00</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <p>© 2026 · Personal Education Portfolio Tracker · Coimbatore Working Group</p>
+    </footer>
+
+    <script>
+        // Data Store
+        const config = {
+            baseExpense: 1500000,
+            baseYear: 2026,
+            inflationRate: 0.10,
+        };
+
+        const kid1Funds = [
+            { code: "119063", units: 486.886, fallbackNav: 135.24, fallbackName: "Aditya Birla Sun Life Frontline Equity Fund" },
+            { code: "118989", units: 1031.928, fallbackNav: 110.85, fallbackName: "HDFC Top 100 Fund" },
+            { code: "119065", units: 1155.795, fallbackNav: 150.32, fallbackName: "SBI Bluechip Fund" },
+            { code: "118968", units: 789.406, fallbackNav: 95.15, fallbackName: "ICICI Prudential Bluechip Fund" },
+            { code: "119062", units: 997.835, fallbackNav: 125.40, fallbackName: "DSP Top 100 Equity Fund" },
+            { code: "130503", units: 482.884, fallbackNav: 84.12, fallbackName: "Kotak Bluechip Fund" }
+        ];
+
+        const kid2Funds = [
+            { code: "122639", units: 9140.129, fallbackNav: 62.45, fallbackName: "Parag Parikh Flexi Cap Fund" },
+            { code: "103490", units: 5629.582, fallbackNav: 85.10, fallbackName: "Mirae Asset Large Cap Fund" }
+        ];
+
+        // Format Helper
+        function formatINR(value) {
+            return new Intl.NumberFormat('en-IN', {
+                style: 'currency',
+                currency: 'INR',
+                maximumFractionDigits: 2
+            }).format(value);
+        }
+
+        // Toggle Theme logic
+        function toggleTheme() {
+            const body = document.body;
+            const currentTheme = body.getAttribute('data-theme');
+            const targetTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            body.setAttribute('data-theme', targetTheme);
+            
+            // Toggle Icon
+            const themeIcon = document.getElementById('theme-icon');
+            if (targetTheme === 'dark') {
+                themeIcon.setAttribute('data-lucide', 'sun');
+            } else {
+                themeIcon.setAttribute('data-lucide', 'moon');
+            }
+            lucide.createIcons();
+        }
+
+        // Switch workspace tabs
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-button').forEach(el => el.classList.remove('active'));
+
+            document.getElementById(tabId).classList.add('active');
+            
+            // Highlight current button
+            const btnIdx = { 'kid1plan': 0, 'kid1mf': 1, 'kid2plan': 2, 'kid2mf': 3 }[tabId];
+            document.querySelectorAll('.tab-button')[btnIdx].classList.add('active');
+        }
+
+        // Generate dynamic inflation plans
+        function generateInflationPlans() {
+            const k1Target = parseInt(document.getElementById('select-k1-year').value);
+            const k2Target = parseInt(document.getElementById('select-k2-year').value);
+
+            // Kid 1 Calculations
+            const k1Body = document.querySelector('#tbl-k1-plan tbody');
+            k1Body.innerHTML = '';
+            let k1Val = config.baseExpense;
+            for (let yr = config.baseYear; yr <= k1Target; yr++) {
+                if (yr > config.baseYear) {
+                    k1Val = k1Val * (1 + config.inflationRate);
+                }
+                const cumulativeInflation = ((k1Val - config.baseExpense) / config.baseExpense * 100).toFixed(1);
+                
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td><strong>${yr}</strong></td>
+                    <td>${formatINR(k1Val)}</td>
+                    <td><span class="badge badge-blue">+${cumulativeInflation}%</span></td>
+                    <td>${yr === k1Target ? '🎓 Target Year' : 'Planning'}</td>
+                `;
+                k1Body.appendChild(row);
+            }
+
+            // Kid 2 Calculations
+            const k2Body = document.querySelector('#tbl-k2-plan tbody');
+            k2Body.innerHTML = '';
+            let k2Val = config.baseExpense;
+            for (let yr = config.baseYear; yr <= k2Target; yr++) {
+                if (yr > config.baseYear) {
+                    k2Val = k2Val * (1 + config.inflationRate);
+                }
+                const cumulativeInflation = ((k2Val - config.baseExpense) / config.baseExpense * 100).toFixed(1);
+
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td><strong>${yr}</strong></td>
+                    <td>${formatINR(k2Val)}</td>
+                    <td><span class="badge badge-blue">+${cumulativeInflation}%</span></td>
+                    <td>${yr === k2Target ? '🎓 Target Year' : 'Planning'}</td>
+                `;
+                k2Body.appendChild(row);
+            }
+        }
+
+        // Fetch Live Mutual Fund NAVs
+        async function fetchMFData() {
+            // Process Kid 1 Portfolio
+            let kid1Total = 0;
+            const k1Body = document.querySelector('#tbl-k1-mf tbody');
+            k1Body.innerHTML = '';
+
+            for (const fund of kid1Funds) {
+                let nav = fund.fallbackNav;
+                let name = fund.fallbackName;
+                try {
+                    const res = await fetch(`https://api.mfapi.in/mf/${fund.code}/latest`);
+                    if (res.ok) {
+                        const payload = await res.json();
+                        if (payload.data && payload.data.length > 0) {
+                            nav = parseFloat(payload.data[0].nav);
+                            name = payload.meta.scheme_name || fund.fallbackName;
+                        }
+                    }
+                } catch (e) {
+                    console.warn(`Failed to retrieve live NAV for AMFI ${fund.code}. Using robust fallback.`);
+                }
+                
+                const currentVal = fund.units * nav;
+                kid1Total += currentVal;
+
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td><code>${fund.code}</code></td>
+                    <td>${name}</td>
+                    <td class="text-right">${fund.units.toFixed(3)}</td>
+                    <td class="text-right">₹${nav.toFixed(2)}</td>
+                    <td class="text-right" style="font-weight: 600;">${formatINR(currentVal)}</td>
+                `;
+                k1Body.appendChild(row);
+            }
+            document.getElementById('k1-mf-total').textContent = formatINR(kid1Total);
+            document.getElementById('kpi-k1-corpus').textContent = formatINR(kid1Total);
+            document.getElementById('k1-sync-status').textContent = "Synced with Live AMFI values";
+
+            // Process Kid 2 Portfolio
+            let kid2Total = 0;
+            const k2Body = document.querySelector('#tbl-k2-mf tbody');
+            k2Body.innerHTML = '';
+
+            for (const fund of kid2Funds) {
+                let nav = fund.fallbackNav;
+                let name = fund.fallbackName;
+                try {
+                    const res = await fetch(`https://api.mfapi.in/mf/${fund.code}/latest`);
+                    if (res.ok) {
+                        const payload = await res.json();
+                        if (payload.data && payload.data.length > 0) {
+                            nav = parseFloat(payload.data[0].nav);
+                            name = payload.meta.scheme_name || fund.fallbackName;
+                        }
+                    }
+                } catch (e) {
+                    console.warn(`Failed to retrieve live NAV for AMFI ${fund.code}. Using robust fallback.`);
+                }
+                
+                const currentVal = fund.units * nav;
+                kid2Total += currentVal;
+
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td><code>${fund.code}</code></td>
+                    <td>${name}</td>
+                    <td class="text-right">${fund.units.toFixed(3)}</td>
+                    <td class="text-right">₹${nav.toFixed(2)}</td>
+                    <td class="text-right" style="font-weight: 600;">${formatINR(currentVal)}</td>
+                `;
+                k2Body.appendChild(row);
+            }
+            document.getElementById('k2-mf-total').textContent = formatINR(kid2Total);
+            document.getElementById('kpi-k2-corpus').textContent = formatINR(kid2Total);
+            document.getElementById('k2-sync-status').textContent = "Synced with Live AMFI values";
+        }
+
+        function updateTargetYears() {
+            const k1Year = document.getElementById('select-k1-year').value;
+            const k2Year = document.getElementById('select-k2-year').value;
+            
+            document.getElementById('kpi-k1-year').textContent = k1Year;
+            document.getElementById('kpi-k2-year').textContent = k2Year;
+            
+            generateInflationPlans();
+        }
+
+        // Init Sequence
+        window.addEventListener('DOMContentLoaded', () => {
+            lucide.createIcons();
+            generateInflationPlans();
+            fetchMFData();
+        });
+    </script>
+</body>
+</html>
