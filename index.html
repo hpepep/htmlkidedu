@@ -201,6 +201,31 @@
             margin-bottom: 0.5rem;
         }
 
+        .kpi-dual-row {
+            display: flex;
+            justify-content: space-between;
+            gap: 1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .kpi-dual-item {
+            flex: 1;
+        }
+
+        .kpi-sublabel {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            font-weight: 600;
+            text-transform: uppercase;
+            margin-bottom: 0.25rem;
+        }
+
+        .kpi-subval {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
         .kpi-subtext {
             font-size: 0.8rem;
             color: var(--text-secondary);
@@ -447,30 +472,53 @@
     <main>
         <!-- KPI Row -->
         <div class="kpi-grid">
+            <!-- Kid 1 Target Card -->
             <div class="kpi-card">
                 <div>
-                    <div class="kpi-label">Kid 1 Target Year</div>
-                    <div class="kpi-value" id="kpi-k1-year">2030</div>
+                    <div class="kpi-label">Kid 1 Target</div>
+                    <div class="kpi-dual-row">
+                        <div class="kpi-dual-item">
+                            <div class="kpi-sublabel">Target Year</div>
+                            <div class="kpi-subval" id="kpi-k1-year">2030</div>
+                        </div>
+                        <div class="kpi-dual-item">
+                            <div class="kpi-sublabel">Target Corpus</div>
+                            <div class="kpi-subval" id="kpi-k1-target-corpus">₹0.00</div>
+                        </div>
+                    </div>
                 </div>
                 <div class="kpi-subtext">
                     <span>
                         <i data-lucide="calendar" style="width: 14px; height: 14px; display: inline; vertical-align: middle;"></i>
-                        Target Graduation Year
+                        Graduation Horizon Parameters
                     </span>
                 </div>
             </div>
+
+            <!-- Kid 2 Target Card -->
             <div class="kpi-card kid2">
                 <div>
-                    <div class="kpi-label">Kid 2 Target Year</div>
-                    <div class="kpi-value" id="kpi-k2-year">2038</div>
+                    <div class="kpi-label">Kid 2 Target</div>
+                    <div class="kpi-dual-row">
+                        <div class="kpi-dual-item">
+                            <div class="kpi-sublabel">Target Year</div>
+                            <div class="kpi-subval" id="kpi-k2-year">2038</div>
+                        </div>
+                        <div class="kpi-dual-item">
+                            <div class="kpi-sublabel">Target Corpus</div>
+                            <div class="kpi-subval" id="kpi-k2-target-corpus">₹0.00</div>
+                        </div>
+                    </div>
                 </div>
                 <div class="kpi-subtext">
                     <span>
                         <i data-lucide="calendar" style="width: 14px; height: 14px; display: inline; vertical-align: middle;"></i>
-                        Target Graduation Year
+                        Graduation Horizon Parameters
                     </span>
                 </div>
             </div>
+
+            <!-- Kid 1 Current Corpus Card -->
             <div class="kpi-card">
                 <div>
                     <div class="kpi-label">
@@ -487,6 +535,8 @@
                     </span>
                 </div>
             </div>
+
+            <!-- Kid 2 Current Corpus Card -->
             <div class="kpi-card kid2">
                 <div>
                     <div class="kpi-label">
@@ -757,6 +807,10 @@
 
             const k1TargetExpense = getTargetExpense(k1TargetYear);
             const k2TargetExpense = getTargetExpense(k2TargetYear);
+
+            // Update Target Card values dynamically
+            document.getElementById('kpi-k1-target-corpus').textContent = formatINR(k1TargetExpense);
+            document.getElementById('kpi-k2-target-corpus').textContent = formatINR(k2TargetExpense);
 
             // 1. Percentage calculations
             const k1Percentage = k1TargetExpense > 0 ? (currentCorpusK1 / k1TargetExpense) * 100 : 0;
