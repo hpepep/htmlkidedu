@@ -812,33 +812,41 @@
             document.getElementById('kpi-k1-target-corpus').textContent = formatINR(k1TargetExpense);
             document.getElementById('kpi-k2-target-corpus').textContent = formatINR(k2TargetExpense);
 
-            // 1. Percentage calculations
+            // 1. Percentage of entire plan target achieved so far
             const k1Percentage = k1TargetExpense > 0 ? (currentCorpusK1 / k1TargetExpense) * 100 : 0;
             const k2Percentage = k2TargetExpense > 0 ? (currentCorpusK2 / k2TargetExpense) * 100 : 0;
 
             document.getElementById('k1-percent-achieved').textContent = `${k1Percentage.toFixed(1)}% of target achieved`;
             document.getElementById('k2-percent-achieved').textContent = `${k2Percentage.toFixed(1)}% of target achieved`;
 
-            // 2. Trend Calculations against Current Year (2026 Baseline ₹15,00,000)
+            // 2. Proportional target expected for the current year (2026 Baseline Milestone vs Full Target Cost)
             const baseExpense = config.baseExpense;
+            
+            // Expected progress percentage for current year (2026 baseline relative to final target expense)
+            const k1ExpectedPctCurrentYear = (baseExpense / k1TargetExpense) * 100;
+            const k2ExpectedPctCurrentYear = (baseExpense / k2TargetExpense) * 100;
 
-            // Kid 1 Badge
+            // Variance Calculation (Actual achieved % minus Expected baseline %)
+            const k1Variance = k1Percentage - k1ExpectedPctCurrentYear;
+            const k2Variance = k2Percentage - k2ExpectedPctCurrentYear;
+
+            // Kid 1 Status Badge updates
             const k1TrendElement = document.getElementById('k1-trend');
-            if (currentCorpusK1 >= baseExpense) {
-                k1TrendElement.textContent = "Ahead (Current Yr)";
+            if (k1Variance >= 0) {
+                k1TrendElement.textContent = `Ahead by ${Math.abs(k1Variance).toFixed(1)}%`;
                 k1TrendElement.className = "trend-badge trend-ahead";
             } else {
-                k1TrendElement.textContent = "Lagging (Current Yr)";
+                k1TrendElement.textContent = `Lagging by ${Math.abs(k1Variance).toFixed(1)}%`;
                 k1TrendElement.className = "trend-badge trend-lagging";
             }
 
-            // Kid 2 Badge
+            // Kid 2 Status Badge updates
             const k2TrendElement = document.getElementById('k2-trend');
-            if (currentCorpusK2 >= baseExpense) {
-                k2TrendElement.textContent = "Ahead (Current Yr)";
+            if (k2Variance >= 0) {
+                k2TrendElement.textContent = `Ahead by ${Math.abs(k2Variance).toFixed(1)}%`;
                 k2TrendElement.className = "trend-badge trend-ahead";
             } else {
-                k2TrendElement.textContent = "Lagging (Current Yr)";
+                k2TrendElement.textContent = `Lagging by ${Math.abs(k2Variance).toFixed(1)}%`;
                 k2TrendElement.className = "trend-badge trend-lagging";
             }
         }
